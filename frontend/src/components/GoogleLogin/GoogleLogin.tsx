@@ -1,5 +1,15 @@
 import React from "react";
 import { useGoogleLogin } from "@react-oauth/google";
+import {
+  Container,
+  Paper,
+  Typography,
+  Button,
+  Alert,
+  Box,
+  CircularProgress
+} from '@mui/material';
+import GoogleIcon from '@mui/icons-material/Google';
 
 interface GoogleLoginProps {
   onLogin: (tokens: any) => void;
@@ -27,9 +37,8 @@ export default function GoogleLogin({ onLogin }: GoogleLoginProps) {
       const data = await response.json();
       setErrorMessage(null);
 
-      const { user, tokens } = data;
       if (onLogin) {
-        onLogin(tokens);
+        onLogin(data);
       }
 
     } catch (error) {
@@ -55,31 +64,58 @@ export default function GoogleLogin({ onLogin }: GoogleLoginProps) {
   });
 
   return (
-    <div style={{ textAlign: "center", marginTop: "100px" }}>
-      <h1>Chat App</h1>
-      
-      {errorMessage && (
-        <div style={{ color: "red", marginBottom: "20px" }}>
-          {errorMessage}
-        </div>
-      )}
-      
-      <button
-        onClick={() => login()}
-        disabled={isLoading}
-        style={{
-          padding: "12px 24px",
-          fontSize: "16px",
-          backgroundColor: "#4285f4",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
-          cursor: isLoading ? "not-allowed" : "pointer",
-          opacity: isLoading ? 0.6 : 1,
-        }}
+    <Container maxWidth="sm">
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        minHeight="100vh"
       >
-        {isLoading ? "Signing in..." : "Sign in with Google"}
-      </button>
-    </div>
+        <Paper
+          elevation={3}
+          sx={{
+            padding: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            width: '100%',
+            maxWidth: 400
+          }}
+        >
+          <Typography variant="h3" component="h1" gutterBottom color="primary">
+            Chat App
+          </Typography>
+          
+          <Typography variant="body1" color="textSecondary" sx={{ mb: 3, textAlign: 'center' }}>
+            Sign in with your Google account to start chatting
+          </Typography>
+
+          {errorMessage && (
+            <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
+              {errorMessage}
+            </Alert>
+          )}
+          
+          <Button
+            variant="contained"
+            size="large"
+            onClick={() => login()}
+            disabled={isLoading}
+            startIcon={isLoading ? <CircularProgress size={20} /> : <GoogleIcon />}
+            sx={{
+              width: '100%',
+              py: 1.5,
+              backgroundColor: '#4285f4',
+              '&:hover': {
+                backgroundColor: '#3367d6',
+              }
+            }}
+          >
+            {isLoading ? "Signing in..." : "Sign in with Google"}
+          </Button>
+        </Paper>
+      </Box>
+    </Container>
   );
 }
