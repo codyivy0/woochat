@@ -1,6 +1,6 @@
 package com.woochat.config;
 
-import com.woochat.service.JwtService;
+import com.woochat.service.GoogleJwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
-    private JwtService jwtService;
+    private GoogleJwtService googleJwtService;
 
     @Override
     protected void doFilterInternal(
@@ -46,24 +46,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         jwt = authHeader.substring(7);
-        userId = jwtService.extractUserId(jwt);
+        userId = googleJwtService.extractUserIdFromGoogleToken(jwt);
 
-        if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            if (jwtService.isValidToken(jwt)) {
-                UserDetails userDetails = User.builder()
-                        .username(userId)
-                        .password("")
-                        .authorities(new ArrayList<>())
-                        .build();
+        if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null 
+            && googleJwtService.isValidGoogleToken(jwt)) {
+            
+            UserDetails userDetails = User.builder()
+                    .username(userId)
+                    .password("")
+                    .authorities(new ArrayList<>())
+                    .build();
 
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            }
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                    userDetails,
+                    null,
+                    userDetails.getAuthorities()
+            );
+            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authToken);
         }
         filterChain.doFilter(request, response);
     }

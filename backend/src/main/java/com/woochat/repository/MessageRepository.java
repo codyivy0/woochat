@@ -8,7 +8,11 @@ import org.springframework.data.jpa.repository.Query;
 
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
-    // Custom method to get recent messages ordered by time
+    // Get messages ordered by creation time (oldest first)
+    @Query("SELECT m FROM Message m ORDER BY m.createdAt ASC")
+    List<Message> findAllByOrderByCreatedAtAsc();
+    
+    // Get recent messages ordered by time (newest first) 
     @Query("SELECT m FROM Message m ORDER BY m.createdAt DESC")
     List<Message> findAllByOrderByCreatedAtDesc();
     

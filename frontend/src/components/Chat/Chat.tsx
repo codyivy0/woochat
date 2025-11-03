@@ -8,7 +8,6 @@ import {
   Box,
   Container,
   Paper,
-  Chip,
   TextField,
   List,
   ListItem,
@@ -21,7 +20,6 @@ import {
   Logout as LogoutIcon,
   Chat as ChatIcon,
   Security as SecurityIcon,
-  Token as TokenIcon,
   Send as SendIcon,
 } from "@mui/icons-material";
 
@@ -76,9 +74,16 @@ const ChatPage: React.FC<ChatPageProps> = ({ token, user, onLogout }) => {
         }
       });
 
+      if (response.status === 403 || response.status === 401) {
+        // Token is invalid, logout user
+        console.log('Authentication failed, logging out...');
+        onLogout();
+        return;
+      }
+
       if (response.ok) {
         const data = await response.json();
-        setMessages(data.reverse()); // Reverse to show oldest first
+        setMessages(data); // Backend now returns messages in correct order (oldest first)
       }
     } catch (error) {
       console.error("Error fetching messages:", error);
@@ -102,6 +107,13 @@ const ChatPage: React.FC<ChatPageProps> = ({ token, user, onLogout }) => {
           content: newMessage.trim(),
         }),
       });
+
+      if (response.status === 403 || response.status === 401) {
+        // Token is invalid, logout user
+        console.log('Authentication failed, logging out...');
+        onLogout();
+        return;
+      }
 
       if (response.ok) {
         setNewMessage("");

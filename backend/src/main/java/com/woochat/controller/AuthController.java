@@ -1,8 +1,8 @@
 package com.woochat.controller;
 
+import com.woochat.config.AppConstants;
 import com.woochat.model.User;
 import com.woochat.repository.UserRepository;
-import com.woochat.service.JwtService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -14,19 +14,16 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.beans.factory.annotation.Autowired;
 
-
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = AppConstants.FRONTEND_URL)
 public class AuthController {
-    @Autowired
-    private UserRepository userRepository;
     
     @Autowired
-    private JwtService jwtService;
+    private UserRepository userRepository;
 
     @PostMapping("/google")
     public ResponseEntity<?> googleAuth(@RequestBody Map<String, String> request) {
@@ -48,12 +45,12 @@ public class AuthController {
             // Save or update user in database
             User user = saveOrUpdateUser(userInfo);
             
-            // Generate JWT token for our application
-            String jwtToken = jwtService.generateToken(user.getId(), user.getEmail(), user.getName());
+            // Use Google's ID token instead of generating our own JWT
+            String googleIdToken = (String) tokenResponse.get("id_token");
             
-            // Create response with JWT instead of Google tokens
+            // Create response with Google's ID token
             Map<String, Object> response = new HashMap<>();
-            response.put("token", jwtToken); // Our JWT token
+            response.put("token", googleIdToken); // Google's ID token (JWT)
             response.put("user", user);
             
             return ResponseEntity.ok(response);
@@ -79,16 +76,17 @@ public class AuthController {
         
         return userRepository.save(user);
     }
+    
     private Map<String, Object> exchangeCodeForTokens(String code) {
         RestTemplate restTemplate = new RestTemplate();
         
         // Use form data instead of JSON
         MultiValueMap<String, String> tokenRequest = new LinkedMultiValueMap<>();
-        tokenRequest.add("client_id", "978081770993-kb0e6dgcom98td498ldgnnribpnd9eh7.apps.googleusercontent.com");
-        tokenRequest.add("client_secret", "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");
+        tokenRequest.add("client_id", AppConstants.GOOGLE_CLIENT_ID);
+        tokenRequest.add("client_secret", AppConstants.GOOGLE_CLIENT_SECRET);
         tokenRequest.add("code", code);
         tokenRequest.add("grant_type", "authorization_code");
-        tokenRequest.add("redirect_uri", "http://localhost:5173");
+        tokenRequest.add("redirect_uri", AppConstants.FRONTEND_URL);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -96,7 +94,7 @@ public class AuthController {
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(tokenRequest, headers);
         
         return restTemplate.postForObject(
-            "https://oauth2.googleapis.com/token",
+            AppConstants.GOOGLE_TOKEN_EXCHANGE_URL,
             entity,
             Map.class
         );
@@ -111,7 +109,7 @@ public class AuthController {
         HttpEntity<String> entity = new HttpEntity<>(headers);
         
         return restTemplate.exchange(
-            "https://www.googleapis.com/oauth2/v2/userinfo",
+            AppConstants.GOOGLE_USER_INFO_URL,
             HttpMethod.GET,
             entity,
             Map.class
