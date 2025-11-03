@@ -1,5 +1,7 @@
 package com.woochat.controller;
 
+import com.woochat.model.User;
+import com.woochat.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -9,6 +11,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.beans.factory.annotation.Autowired;
+
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +21,8 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "http://localhost:5173")
 public class AuthController {
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping("/google")
     public ResponseEntity<?> googleAuth(@RequestBody Map<String, String> request) {
@@ -35,10 +41,13 @@ public class AuthController {
                 (String) tokenResponse.get("access_token")
             );
             
+            // Save or update user in database
+            User user = saveOrUpdateUser(userInfo);
+            
             // Create response
             Map<String, Object> response = new HashMap<>();
             response.put("tokens", tokenResponse);
-            response.put("user", userInfo);
+            response.put("user", user);
             
             return ResponseEntity.ok(response);
             
@@ -49,6 +58,20 @@ public class AuthController {
         }
     }
 
+    private User saveOrUpdateUser(Map<String, Object> userInfo) {
+        String id = (String) userInfo.get("id");
+        String email = (String) userInfo.get("email");
+        String name = (String) userInfo.get("name");
+        String picture = (String) userInfo.get("picture");
+        
+        User user = userRepository.findById(id).orElse(new User());
+        user.setId(id);
+        user.setEmail(email);
+        user.setName(name);
+        user.setPicture(picture);
+        
+        return userRepository.save(user);
+    }
     private Map<String, Object> exchangeCodeForTokens(String code) {
         RestTemplate restTemplate = new RestTemplate();
         
