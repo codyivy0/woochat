@@ -175,17 +175,6 @@ const ChatPage: React.FC<ChatPageProps> = ({ tokens, user, onLogout }) => {
               </Box>
             </Paper>
           </Box>
-
-          <Box flex={1}>
-            <Paper sx={{ p: 2 }}>
-              <Box display="flex" alignItems="center" gap={1}>
-                <TokenIcon color="primary" />
-                <Typography variant="body2">
-                  Token expires in {tokens?.expires_in} seconds
-                </Typography>
-              </Box>
-            </Paper>
-          </Box>
         </Box>
 
         {/* Chat Area */}
@@ -237,37 +226,99 @@ const ChatPage: React.FC<ChatPageProps> = ({ tokens, user, onLogout }) => {
 
               return (
                 <List sx={{ pt: 0 }}>
-                  {messages.map((message) => (
-                    <ListItem
-                      key={message.id}
-                      alignItems="flex-start"
-                      sx={{ pb: 2 }}
-                    >
-                      <ListItemAvatar>
-                        <Avatar
-                          src={message.sender.picture}
-                          alt={message.sender.name}
+                  {messages.map((message) => {
+                    const isCurrentUser = message.sender.id === user.id;
+
+                    return (
+                      <ListItem
+                        key={message.id}
+                        alignItems="flex-start"
+                        sx={{
+                          pb: 2,
+                          flexDirection: isCurrentUser ? "row-reverse" : "row",
+                          pl: isCurrentUser ? 4 : 2,
+                          pr: isCurrentUser ? 2 : 4,
+                        }}
+                      >
+                        <ListItemAvatar
+                          sx={{
+                            minWidth: isCurrentUser ? 0 : 56,
+                            ml: isCurrentUser ? 1 : 0,
+                            mr: isCurrentUser ? 0 : 1,
+                          }}
+                        >
+                          <Avatar
+                            src={message.sender.picture}
+                            alt={message.sender.name}
+                          />
+                        </ListItemAvatar>
+                        <ListItemText
+                          sx={{
+                            textAlign: isCurrentUser ? "right" : "left",
+                            "& .MuiListItemText-primary": {
+                              justifyContent: isCurrentUser
+                                ? "flex-end"
+                                : "flex-start",
+                            },
+                          }}
+                          primary={
+                            <Box
+                              display="flex"
+                              alignItems="center"
+                              gap={1}
+                              justifyContent={
+                                isCurrentUser ? "flex-end" : "flex-start"
+                              }
+                            >
+                              <Typography variant="subtitle2">
+                                {isCurrentUser ? "You" : message.sender.name}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                color="textSecondary"
+                              >
+                                {formatTime(message.createdAt)}
+                              </Typography>
+                            </Box>
+                          }
+                          secondary={
+                            <Box
+                              sx={{
+                                display: "flex",
+                                justifyContent: isCurrentUser
+                                  ? "flex-end"
+                                  : "flex-start",
+                                mt: 0.5,
+                              }}
+                            >
+                              <Paper
+                                elevation={1}
+                                sx={{
+                                  p: 1.5,
+                                  maxWidth: "70%",
+                                  minWidth: "fit-content",
+                                  width: "auto",
+                                  display: "inline-block",
+                                  backgroundColor: isCurrentUser
+                                    ? "primary.main"
+                                    : "grey.100",
+                                  color: isCurrentUser
+                                    ? "primary.contrastText"
+                                    : "text.primary",
+                                  borderRadius: 2,
+                                  wordBreak: "break-word",
+                                }}
+                              >
+                                <Typography variant="body1">
+                                  {message.content}
+                                </Typography>
+                              </Paper>
+                            </Box>
+                          }
                         />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <Typography variant="subtitle2">
-                              {message.sender.name}
-                            </Typography>
-                            <Typography variant="caption" color="textSecondary">
-                              {formatTime(message.createdAt)}
-                            </Typography>
-                          </Box>
-                        }
-                        secondary={
-                          <Typography variant="body1" sx={{ mt: 0.5 }}>
-                            {message.content}
-                          </Typography>
-                        }
-                      />
-                    </ListItem>
-                  ))}
+                      </ListItem>
+                    );
+                  })}
                   <div ref={messagesEndRef} />
                 </List>
               );
