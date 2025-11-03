@@ -37,12 +37,12 @@ interface Message {
 }
 
 interface ChatPageProps {
-  tokens: any;
+  token: string;
   user: any;
   onLogout: () => void;
 }
 
-const ChatPage: React.FC<ChatPageProps> = ({ tokens, user, onLogout }) => {
+const ChatPage: React.FC<ChatPageProps> = ({ token, user, onLogout }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -69,7 +69,12 @@ const ChatPage: React.FC<ChatPageProps> = ({ tokens, user, onLogout }) => {
 
   const fetchMessages = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/chat/messages");
+      const response = await fetch("http://localhost:8080/api/chat/messages", {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
       if (response.ok) {
         const data = await response.json();
@@ -91,10 +96,10 @@ const ChatPage: React.FC<ChatPageProps> = ({ tokens, user, onLogout }) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
           content: newMessage.trim(),
-          userId: user.id,
         }),
       });
 
@@ -120,6 +125,22 @@ const ChatPage: React.FC<ChatPageProps> = ({ tokens, user, onLogout }) => {
     const date = new Date(dateString);
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
+
+  // If user is not loaded yet, show loading
+  if (!user) {
+    return (
+      <Box
+        sx={{
+          height: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -227,7 +248,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ tokens, user, onLogout }) => {
               return (
                 <List sx={{ pt: 0 }}>
                   {messages.map((message) => {
-                    const isCurrentUser = message.sender.id === user.id;
+                    const isCurrentUser = user && message.sender.id === user.id;
 
                     return (
                       <ListItem
@@ -260,6 +281,9 @@ const ChatPage: React.FC<ChatPageProps> = ({ tokens, user, onLogout }) => {
                                 ? "flex-end"
                                 : "flex-start",
                             },
+                          }}
+                          slotProps={{
+                            secondary: { component: "div" }
                           }}
                           primary={
                             <Box
@@ -309,7 +333,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ tokens, user, onLogout }) => {
                                   wordBreak: "break-word",
                                 }}
                               >
-                                <Typography variant="body1">
+                                <Typography variant="body1" component="span">
                                   {message.content}
                                 </Typography>
                               </Paper>

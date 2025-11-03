@@ -84,7 +84,7 @@ export default function GoogleLogin({ onLogin }: GoogleLoginProps) {
           }}
         >
           <Typography variant="h3" component="h1" gutterBottom color="primary">
-            Chat App
+            WooChat
           </Typography>
           
           <Typography variant="body1" color="textSecondary" sx={{ mb: 3, textAlign: 'center' }}>

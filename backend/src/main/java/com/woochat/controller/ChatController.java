@@ -4,7 +4,10 @@ import com.woochat.model.Message;
 import com.woochat.model.User;
 import com.woochat.repository.MessageRepository;
 import com.woochat.repository.UserRepository;
+import com.woochat.service.JwtService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -19,13 +22,14 @@ public class ChatController {
     private MessageRepository messageRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private JwtService jwtService;
 
     @GetMapping("/messages")
     public ResponseEntity<List<Message>> getMessages() {
         try {
-            // Use findAll() first to test if basic query works
             List<Message> messages = messageRepository.findAll();
-            System.out.println("Found " + messages.size() + " messages"); // Debug log
+            System.out.println("Found " + messages.size() + " messages");
             return ResponseEntity.ok(messages);
         } catch (Exception e) {
             System.err.println("Error fetching messages: " + e.getMessage());
@@ -37,11 +41,14 @@ public class ChatController {
     @PostMapping("/messages")
     public ResponseEntity<Message> sendMessage(@RequestBody Map<String, String> request) {
         String content = request.get("content");
-        String userId = request.get("userId");
         
         if (content == null || content.trim().isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
+        
+        // Get authenticated user from JWT
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
         
         // Find user
         User user = userRepository.findById(userId).orElse(null);

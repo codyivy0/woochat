@@ -2,6 +2,7 @@ package com.woochat.controller;
 
 import com.woochat.model.User;
 import com.woochat.repository.UserRepository;
+import com.woochat.service.JwtService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -23,6 +24,9 @@ import java.util.Map;
 public class AuthController {
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private JwtService jwtService;
 
     @PostMapping("/google")
     public ResponseEntity<?> googleAuth(@RequestBody Map<String, String> request) {
@@ -44,9 +48,12 @@ public class AuthController {
             // Save or update user in database
             User user = saveOrUpdateUser(userInfo);
             
-            // Create response
+            // Generate JWT token for our application
+            String jwtToken = jwtService.generateToken(user.getId(), user.getEmail(), user.getName());
+            
+            // Create response with JWT instead of Google tokens
             Map<String, Object> response = new HashMap<>();
-            response.put("tokens", tokenResponse);
+            response.put("token", jwtToken); // Our JWT token
             response.put("user", user);
             
             return ResponseEntity.ok(response);
