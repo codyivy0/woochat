@@ -22,6 +22,7 @@ import {
   Security as SecurityIcon,
   Send as SendIcon,
 } from "@mui/icons-material";
+import { APP_CONFIG } from '../../config/constants';
 
 interface Message {
   id: number;
@@ -67,7 +68,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ token, user, onLogout }) => {
 
   const fetchMessages = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/chat/messages", {
+      const response = await fetch(`${APP_CONFIG.API_BASE_URL}${APP_CONFIG.API_ENDPOINTS.MESSAGES}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -97,7 +98,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ token, user, onLogout }) => {
 
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:8080/api/chat/messages", {
+      const response = await fetch(`${APP_CONFIG.API_BASE_URL}${APP_CONFIG.API_ENDPOINTS.MESSAGES}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

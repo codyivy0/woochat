@@ -10,6 +10,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
+import { APP_CONFIG } from '../../config/constants';
 
 interface GoogleLoginProps {
   onLogin: (tokens: any) => void;
@@ -22,7 +23,7 @@ export default function GoogleLogin({ onLogin }: GoogleLoginProps) {
   const handleGoogleLogin = async (code: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:8080/api/auth/google", {
+      const response = await fetch(`${APP_CONFIG.API_BASE_URL}${APP_CONFIG.API_ENDPOINTS.AUTH_GOOGLE}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

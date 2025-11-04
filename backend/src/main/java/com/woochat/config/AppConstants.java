@@ -12,11 +12,11 @@ public final class AppConstants {
     public static final String GOOGLE_TOKEN_EXCHANGE_URL = "https://oauth2.googleapis.com/token";
     public static final String GOOGLE_USER_INFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
     
-    // Frontend Configuration  
-    public static final String FRONTEND_URL = "http://localhost:5173";
+    // Frontend Configuration
+    public static final String FRONTEND_URL = "http://localhost:3000";
     
     // Kafka Configuration
-    public static final String KAFKA_BOOTSTRAP_SERVERS = "localhost:9092";
+    public static final String KAFKA_BOOTSTRAP_SERVERS = "kafka:9092";
     
     // Message Configuration
     public static final int MAX_MESSAGE_LENGTH = 200;

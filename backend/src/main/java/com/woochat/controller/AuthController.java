@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +27,7 @@ public class AuthController {
     private UserRepository userRepository;
 
     @PostMapping("/google")
-    public ResponseEntity<?> googleAuth(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> googleAuth(@RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
         String code = request.get("code");
         
         if (code == null || code.isEmpty()) {
@@ -34,8 +35,11 @@ public class AuthController {
         }
 
         try {
+            // Get the frontend URL from the request origin or use default
+            String frontendUrl = getFrontendUrlFromRequest(httpRequest);
+            
             // Exchange code for tokens with Google
-            Map<String, Object> tokenResponse = exchangeCodeForTokens(code);
+            Map<String, Object> tokenResponse = exchangeCodeForTokens(code, frontendUrl);
             
             // Get user info from Google
             Map<String, Object> userInfo = getUserInfoFromGoogle(
@@ -77,7 +81,34 @@ public class AuthController {
         return userRepository.save(user);
     }
     
-    private Map<String, Object> exchangeCodeForTokens(String code) {
+    /**
+     * Get frontend URL from request headers (Origin or Referer)
+     * Fallback to configured constant if not available
+     */
+    private String getFrontendUrlFromRequest(HttpServletRequest request) {
+        // Try Origin header first (most reliable)
+        String origin = request.getHeader("Origin");
+        if (origin != null && !origin.isEmpty()) {
+            return origin;
+        }
+        
+        // Try Referer header as fallback
+        String referer = request.getHeader("Referer");
+        if (referer != null && !referer.isEmpty()) {
+            try {
+                java.net.URI uri = java.net.URI.create(referer);
+                return uri.getScheme() + "://" + uri.getHost() + 
+                       (uri.getPort() != -1 ? ":" + uri.getPort() : "");
+            } catch (Exception e) {
+                System.err.println("Failed to parse referer URL: " + referer);
+            }
+        }
+        
+        // Fallback to configured constant
+        return AppConstants.FRONTEND_URL;
+    }
+    
+    private Map<String, Object> exchangeCodeForTokens(String code, String frontendUrl) {
         RestTemplate restTemplate = new RestTemplate();
         
         // Use form data instead of JSON
@@ -86,7 +117,7 @@ public class AuthController {
         tokenRequest.add("client_secret", AppConstants.GOOGLE_CLIENT_SECRET);
         tokenRequest.add("code", code);
         tokenRequest.add("grant_type", "authorization_code");
-        tokenRequest.add("redirect_uri", AppConstants.FRONTEND_URL);
+        tokenRequest.add("redirect_uri", frontendUrl); // Use dynamic frontend URL
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
