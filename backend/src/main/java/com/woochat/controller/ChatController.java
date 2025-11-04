@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/chat")
@@ -24,7 +25,8 @@ public class ChatController {
     private UserRepository userRepository;
     @Autowired
     private GoogleJwtService googleJwtService;
-    @Autowired
+    
+    @Autowired(required = false)
     private KafkaMessageProducer kafkaMessageProducer;
 
     @GetMapping("/messages")
@@ -68,14 +70,19 @@ public class ChatController {
         }
         
         try {
-            // Send message to Kafka instead of directly saving to database
-            kafkaMessageProducer.sendChatMessage(content.trim(), user);
-            
-            // Return success immediately (asynchronous processing)
-            return ResponseEntity.ok("Message sent successfully");
+            // Try to send message to Kafka if available, otherwise save directly
+            if (kafkaMessageProducer != null) {
+                kafkaMessageProducer.sendChatMessage(content.trim(), user);
+                return ResponseEntity.ok("Message sent successfully via Kafka");
+            } else {
+                // Fallback to direct database save when Kafka is not available
+                Message message = new Message(content.trim(), user);
+                messageRepository.save(message);
+                return ResponseEntity.ok("Message saved successfully");
+            }
             
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Failed to send message");
+            return ResponseEntity.status(500).body("Failed to send message: " + e.getMessage());
         }
     }
 }

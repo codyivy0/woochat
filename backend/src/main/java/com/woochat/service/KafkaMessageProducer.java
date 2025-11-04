@@ -6,6 +6,7 @@ import com.woochat.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
@@ -16,8 +17,14 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Service responsible for sending chat messages to Kafka
  * This replaces direct database saves with asynchronous message publishing
+ * Only active when Kafka is enabled
  */
 @Service
+@ConditionalOnProperty(
+    value = "spring.kafka.enabled", 
+    havingValue = "true", 
+    matchIfMissing = false
+)
 public class KafkaMessageProducer {
     
     private static final Logger logger = LoggerFactory.getLogger(KafkaMessageProducer.class);
