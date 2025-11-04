@@ -28,6 +28,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/", "/health").permitAll() // Root and simple health endpoints
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/health", "/api/test", "/api/env-check").permitAll() // Health check endpoints
                 .requestMatchers("/actuator/health").permitAll() // Actuator health check
