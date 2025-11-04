@@ -30,6 +30,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/chat/**").authenticated()
+                .requestMatchers("/actuator/health").permitAll() // Health check endpoint
                 .anyRequest().permitAll()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -44,13 +45,17 @@ public class SecurityConfig {
         // Allow both localhost (any port) and Railway domains
         configuration.setAllowedOriginPatterns(List.of(
             "http://localhost:*",
-            "https://localhost:*",
+            "https://localhost:*", 
             "https://*.up.railway.app"
         ));
         
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Explicitly allow all common HTTP methods including OPTIONS for preflight
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
+        
+        // Allow preflight requests to be cached for 1 hour
+        configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
