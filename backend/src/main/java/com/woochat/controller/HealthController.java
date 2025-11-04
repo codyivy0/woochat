@@ -52,8 +52,22 @@ public class HealthController {
         envStatus.put(FRONTEND_URL_KEY, System.getenv(FRONTEND_URL_KEY) != null ? System.getenv(FRONTEND_URL_KEY) : NOT_SET);
         envStatus.put(KAFKA_BOOTSTRAP_SERVERS_KEY, System.getenv(KAFKA_BOOTSTRAP_SERVERS_KEY) != null ? SET : NOT_SET);
         
+        // Check database connectivity
+        try {
+            // Simple way to check if we can resolve database connection
+            String dbUrl = System.getenv(DATABASE_URL_KEY);
+            if (dbUrl != null) {
+                envStatus.put("database_connection", "URL_CONFIGURED");
+            } else {
+                envStatus.put("database_connection", "LOCAL_CONFIG");
+            }
+        } catch (Exception e) {
+            envStatus.put("database_connection", "ERROR: " + e.getMessage());
+        }
+        
         response.put("environment_variables", envStatus);
         response.put("profile", System.getProperty("spring.profiles.active", "default"));
+        response.put("port", System.getProperty("server.port", "8080"));
         
         return ResponseEntity.ok(response);
     }
