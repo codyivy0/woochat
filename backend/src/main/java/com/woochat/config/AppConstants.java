@@ -6,14 +6,20 @@ package com.woochat.config;
 public final class AppConstants {
     
     // Google OAuth Configuration
-    public static final String GOOGLE_CLIENT_ID = "978081770993-kb0e6dgcom98td498ldgnnribpnd9eh7.apps.googleusercontent.com";
-    public static final String GOOGLE_CLIENT_SECRET = "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";
+    public static final String GOOGLE_CLIENT_ID = System.getenv("GOOGLE_CLIENT_ID") != null 
+        ? System.getenv("GOOGLE_CLIENT_ID") 
+        : "978081770993-kb0e6dgcom98td498ldgnnribpnd9eh7.apps.googleusercontent.com";
+    public static final String GOOGLE_CLIENT_SECRET = System.getenv("GOOGLE_CLIENT_SECRET") != null 
+        ? System.getenv("GOOGLE_CLIENT_SECRET") 
+        : "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";
     public static final String GOOGLE_TOKEN_VERIFY_URL = "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=";
     public static final String GOOGLE_TOKEN_EXCHANGE_URL = "https://oauth2.googleapis.com/token";
     public static final String GOOGLE_USER_INFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
     
     // Frontend Configuration
-    public static final String FRONTEND_URL = "http://localhost:3000";
+    public static final String FRONTEND_URL = System.getenv("FRONTEND_URL") != null 
+        ? System.getenv("FRONTEND_URL") 
+        : "http://localhost:3000";
     
     // Kafka Configuration
     public static final String KAFKA_BOOTSTRAP_SERVERS = "kafka:9092";
