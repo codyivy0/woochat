@@ -1,6 +1,5 @@
 package com.woochat.controller;
 
-import com.woochat.config.AppConstants;
 import com.woochat.model.Message;
 import com.woochat.model.User;
 import com.woochat.repository.MessageRepository;
@@ -18,7 +17,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/chat")
-@CrossOrigin(origins = AppConstants.FRONTEND_URL)
 public class ChatController {
     @Autowired
     private MessageRepository messageRepository;

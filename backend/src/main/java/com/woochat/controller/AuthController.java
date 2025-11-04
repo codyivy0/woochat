@@ -20,7 +20,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = AppConstants.FRONTEND_URL)
 public class AuthController {
     
     @Autowired
