@@ -25,15 +25,16 @@ RUN rm -rf /usr/share/nginx/html/*
 # Copy built React app from build stage
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy custom nginx configuration
+# Copy custom nginx configurations
+COPY nginx.main.conf /etc/nginx/nginx.conf
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80
 EXPOSE 80
 
-# Add health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:80 || exit 1
+# Add health check with longer timeout for Railway
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
