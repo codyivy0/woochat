@@ -4,10 +4,27 @@ export const APP_CONFIG = {
   GOOGLE_CLIENT_ID: "978081770993-kb0e6dgcom98td498ldgnnribpnd9eh7.apps.googleusercontent.com",
   
   // API Configuration
-  // In Railway: VITE_API_BASE_URL must be set to backend service URL
-  // In Docker: API calls go through Nginx proxy to backend  
-  // In development: Direct to localhost:8080
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
+  // Environment-based API URL detection
+  API_BASE_URL: (() => {
+    // If VITE_API_BASE_URL is explicitly set, use it
+    if (import.meta.env.VITE_API_BASE_URL) {
+      return import.meta.env.VITE_API_BASE_URL;
+    }
+    
+    // In production (Railway), try to detect backend URL pattern
+    if (import.meta.env.PROD && globalThis.window !== undefined) {
+      const currentHost = globalThis.window.location.host;
+      // If we're on Railway (frontend-production-xxx.up.railway.app)
+      if (currentHost.includes('frontend-production-') && currentHost.includes('.up.railway.app')) {
+        // Try to construct backend URL by replacing 'frontend' with 'backend'
+        const backendHost = currentHost.replace('frontend-production-', 'backend-production-');
+        return `https://${backendHost}`;
+      }
+    }
+    
+    // Development fallback
+    return "http://localhost:8080";
+  })(),
   API_ENDPOINTS: {
     AUTH_GOOGLE: "/api/auth/google",
     MESSAGES: "/api/chat/messages",
