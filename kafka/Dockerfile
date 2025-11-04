@@ -1,25 +1,27 @@
 # Kafka Dockerfile for Railway deployment with KRaft mode
 FROM confluentinc/cp-kafka:7.5.0
 
-# Create KRaft configuration and log directory
-RUN mkdir -p /opt/kafka/config /tmp/kraft-combined-logs && \
-    echo "# KRaft Configuration" > /opt/kafka/config/server.properties && \
-    echo "node.id=1" >> /opt/kafka/config/server.properties && \
-    echo "process.roles=broker,controller" >> /opt/kafka/config/server.properties && \
-    echo "controller.quorum.voters=1@localhost:29093" >> /opt/kafka/config/server.properties && \
-    echo "listeners=PLAINTEXT://:9092,CONTROLLER://:29093,EXTERNAL://:9094" >> /opt/kafka/config/server.properties && \
-    echo "inter.broker.listener.name=PLAINTEXT" >> /opt/kafka/config/server.properties && \
-    echo "controller.listener.names=CONTROLLER" >> /opt/kafka/config/server.properties && \
-    echo "listener.security.protocol.map=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT" >> /opt/kafka/config/server.properties && \
-    echo "advertised.listeners=PLAINTEXT://localhost:9092,EXTERNAL://0.0.0.0:9094" >> /opt/kafka/config/server.properties && \
-    echo "offsets.topic.replication.factor=1" >> /opt/kafka/config/server.properties && \
-    echo "group.initial.rebalance.delay.ms=0" >> /opt/kafka/config/server.properties && \
-    echo "transaction.state.log.replication.factor=1" >> /opt/kafka/config/server.properties && \
-    echo "transaction.state.log.min.isr=1" >> /opt/kafka/config/server.properties && \
-    echo "log.dirs=/tmp/kraft-combined-logs" >> /opt/kafka/config/server.properties
+# Set environment variables for KRaft mode
+ENV KAFKA_NODE_ID=1
+ENV KAFKA_PROCESS_ROLES=broker,controller
+ENV KAFKA_CONTROLLER_QUORUM_VOTERS=1@localhost:29093
+ENV KAFKA_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:29093
+ENV KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+ENV KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+ENV KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+ENV KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+ENV KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+ENV KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0
+ENV KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
+ENV KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+ENV KAFKA_LOG_DIRS=/tmp/kraft-combined-logs
+ENV CLUSTER_ID=MkU3OEVBNTcwNTJENDM2Qk
+
+# Create log directory
+RUN mkdir -p /tmp/kraft-combined-logs
 
 # Expose the ports
-EXPOSE 9092 9094
+EXPOSE 9092
 
-# Format log directories for KRaft and start Kafka
-CMD ["sh", "-c", "kafka-storage format -t $CLUSTER_ID -c /opt/kafka/config/server.properties --ignore-formatted && kafka-server-start /opt/kafka/config/server.properties"]
+# Format storage and start Kafka in KRaft mode
+CMD ["sh", "-c", "kafka-storage format -t $CLUSTER_ID -c /etc/kafka/kafka.properties --ignore-formatted && kafka-server-start /etc/kafka/kafka.properties"]
