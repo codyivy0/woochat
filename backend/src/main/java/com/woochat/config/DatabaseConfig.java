@@ -38,7 +38,7 @@ public class DatabaseConfig {
     }
     
     private DataSource createDataSourceFromUrl(String databaseUrl) {
-        if (databaseUrl.startsWith("postgres://")) {
+        if (databaseUrl.startsWith("postgres://") || databaseUrl.startsWith("postgresql://")) {
             return createRailwayDataSource(databaseUrl);
         } else if (databaseUrl.startsWith("jdbc:postgresql://")) {
             return createJdbcDataSource(databaseUrl);
@@ -56,6 +56,8 @@ public class DatabaseConfig {
             String password = userInfo[1];
             
             System.out.println("Using Railway PostgreSQL connection: " + sanitizeUrl(jdbcUrl));
+            System.out.println("Railway database: " + uri.getPath());
+            System.out.println("Railway host: " + uri.getHost() + ":" + uri.getPort());
             
             return DataSourceBuilder.create()
                     .url(jdbcUrl)
