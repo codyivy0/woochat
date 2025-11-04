@@ -29,8 +29,9 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/health", "/api/test", "/api/env-check").permitAll() // Health check endpoints
+                .requestMatchers("/actuator/health").permitAll() // Actuator health check
                 .requestMatchers("/api/chat/**").authenticated()
-                .requestMatchers("/actuator/health").permitAll() // Health check endpoint
                 .anyRequest().permitAll()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

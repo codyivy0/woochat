@@ -19,7 +19,17 @@ docker-compose up --build
 **Access the application:**
 - 🌐 **Frontend**: http://localhost:3000
 - 🔧 **Backend API**: http://localhost:8080
-- 📊 **Health Check**: http://localhost:8080/actuator/health
+- 📊 **Health Check**: http://localhost:8080/api/health
+
+## ☁️ Railway Deployment
+
+**Deploy to Railway cloud platform:**
+
+```bash
+./deploy-railway.sh
+```
+
+This will show you the complete Railway deployment guide. See `RAILWAY_DEPLOY.md` for detailed instructions and `RAILWAY_TROUBLESHOOTING.md` for common issues and solutions.
 
 ## 🏗️ Architecture
 
