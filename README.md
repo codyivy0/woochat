@@ -1,4 +1,4 @@
-# 💬 WooChat
+# 💬 WooChat 1
 
 A real-time chat application built with **React**, **Spring Boot**, **Apache Kafka**, and **PostgreSQL**.
 
