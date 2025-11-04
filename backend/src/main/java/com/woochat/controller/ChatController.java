@@ -6,6 +6,7 @@ import com.woochat.model.User;
 import com.woochat.repository.MessageRepository;
 import com.woochat.repository.UserRepository;
 import com.woochat.service.GoogleJwtService;
+import com.woochat.service.KafkaMessageProducer;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,6 +26,8 @@ public class ChatController {
     private UserRepository userRepository;
     @Autowired
     private GoogleJwtService googleJwtService;
+    @Autowired
+    private KafkaMessageProducer kafkaMessageProducer;
 
     @GetMapping("/messages")
     public ResponseEntity<List<Message>> getMessages() {
@@ -41,7 +44,7 @@ public class ChatController {
     }
 
     @PostMapping("/messages")
-    public ResponseEntity<Message> sendMessage(@RequestBody Map<String, String> request) {
+    public ResponseEntity<String> sendMessage(@RequestBody Map<String, String> request) {
         if (request == null) {
             return ResponseEntity.badRequest().build();
         }
@@ -66,9 +69,15 @@ public class ChatController {
             return ResponseEntity.badRequest().build();
         }
         
-        Message message = new Message(content.trim(), user);
-        Message savedMessage = messageRepository.save(message);
-        
-        return ResponseEntity.ok(savedMessage);
+        try {
+            // Send message to Kafka instead of directly saving to database
+            kafkaMessageProducer.sendChatMessage(content.trim(), user);
+            
+            // Return success immediately (asynchronous processing)
+            return ResponseEntity.ok("Message sent successfully");
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Failed to send message");
+        }
     }
 }

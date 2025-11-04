@@ -15,6 +15,9 @@ public final class AppConstants {
     // Frontend Configuration  
     public static final String FRONTEND_URL = "http://localhost:5173";
     
+    // Kafka Configuration
+    public static final String KAFKA_BOOTSTRAP_SERVERS = "localhost:9092";
+    
     // Message Configuration
     public static final int MAX_MESSAGE_LENGTH = 200;
     public static final int MESSAGE_POLL_INTERVAL_MS = 3000;
