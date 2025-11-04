@@ -14,7 +14,6 @@ public class DatabaseConfig {
 
     @Bean
     @Primary
-    @ConfigurationProperties("spring.datasource")
     public DataSource dataSource() {
         // Check if we're running on Railway (has DATABASE_URL environment variable)
         String databaseUrl = System.getenv("DATABASE_URL");
@@ -35,11 +34,16 @@ public class DatabaseConfig {
                         .build();
                         
             } catch (Exception e) {
-                throw new RuntimeException("Failed to parse DATABASE_URL: " + databaseUrl, e);
+                throw new IllegalStateException("Failed to parse DATABASE_URL: " + databaseUrl, e);
             }
         }
         
-        // For local development, use application.properties values
-        return DataSourceBuilder.create().build();
+        // For local development, create DataSource with properties from application.properties
+        return DataSourceBuilder.create()
+                .url("jdbc:postgresql://localhost:5432/chatdb")
+                .username("chatuser")
+                .password("chatpass")
+                .driverClassName("org.postgresql.Driver")
+                .build();
     }
 }
